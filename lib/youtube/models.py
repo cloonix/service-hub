@@ -11,8 +11,6 @@ class FormatType(str, Enum):
 
     PLAIN = "plain"
     STRUCTURED = "structured"
-    SRT = "srt"
-    VTT = "vtt"
 
 
 class TranscriptRequest(BaseModel):

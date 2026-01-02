@@ -33,7 +33,7 @@ def get_transcript(
         "plain",
         "--format",
         "-f",
-        help="Output format: plain, json, srt, vtt",
+        help="Output format: plain, json",
     ),
     output: Optional[str] = typer.Option(
         None, "--output", "-o", help="Save to file instead of stdout"
@@ -51,12 +51,9 @@ def get_transcript(
 
         # Get JSON format with timestamps and save to file
         youtube-transcript get-transcript VIDEO_ID -f json -o transcript.json
-
-        # Get SRT subtitle file
-        youtube-transcript get-transcript VIDEO_ID -f srt -o subtitles.srt
     """
     # Validate format
-    valid_formats = ["plain", "json", "srt", "vtt"]
+    valid_formats = ["plain", "json"]
     if format not in valid_formats:
         console.print(
             f"[red]✗[/red] Invalid format: {format}. Must be one of: {', '.join(valid_formats)}",

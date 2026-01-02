@@ -31,7 +31,7 @@ def register_youtube_tools(mcp_server, cache=None):
         Args:
             video_url_or_id: YouTube video URL or video ID (e.g., 'dQw4w9WgXcQ' or 'https://youtube.com/watch?v=dQw4w9WgXcQ')
             languages: List of preferred language codes (e.g., ['en', 'es']). Defaults to ['en']
-            format_type: Output format - 'plain', 'structured', 'srt', or 'vtt'. Defaults to 'plain'
+            format_type: Output format - 'plain' or 'structured'. Defaults to 'plain'
 
         Returns:
             Dictionary containing:

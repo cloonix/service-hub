@@ -15,9 +15,7 @@ from youtube_transcript_api._errors import (
 from lib.youtube.cache import CacheProtocol
 from lib.youtube.formatters import (
     format_plain,
-    format_srt,
     format_structured,
-    format_vtt,
 )
 from lib.youtube.models import FormatType, LanguagesResponse, TranscriptResponse
 
@@ -160,10 +158,6 @@ class TranscriptService:
             return format_plain(transcript_data)
         elif format_type == FormatType.STRUCTURED:
             return format_structured(transcript_data)
-        elif format_type == FormatType.SRT:
-            return format_srt(transcript_data)
-        elif format_type == FormatType.VTT:
-            return format_vtt(transcript_data)
         else:
             return format_plain(transcript_data)
 
@@ -178,7 +172,7 @@ class TranscriptService:
         Args:
             video_url_or_id: YouTube URL or 11-character video ID
             languages: Preferred languages in order (default: ["en"])
-            format_type: Output format (plain, structured, srt, vtt)
+            format_type: Output format (plain, structured)
 
         Returns:
             TranscriptResponse with transcript data and metadata

@@ -29,8 +29,6 @@ Available Tool Categories:
   Supported Formats:
     - plain: Plain text transcript
     - structured: JSON with timestamps and text
-    - srt: SubRip subtitle format
-    - vtt: WebVTT subtitle format
 
   Features:
     - Automatic caching for faster repeated requests
