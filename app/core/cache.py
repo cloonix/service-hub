@@ -1,11 +1,14 @@
 """TTL cache with optional disk persistence and LRU eviction."""
 
 import json
+import logging
 import pickle
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class TTLCache:
@@ -68,7 +71,8 @@ class TTLCache:
 
                 # Clean expired entries after loading
                 self._cleanup_expired()
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Failed to load cache from disk: {e}")
                 # If loading fails, start with fresh cache
                 self._cache.clear()
                 self._timestamps.clear()
@@ -92,9 +96,8 @@ class TTLCache:
             }
             with open(meta_file, "w") as f:
                 json.dump(meta, f)
-        except Exception:
-            # Fail silently on disk write errors
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to save cache to disk: {e}")
 
     def _cleanup_expired(self) -> None:
         """Remove expired entries from cache."""

@@ -70,7 +70,7 @@ async def get_current_api_key(
     if settings.MASTER_API_KEY and api_key == settings.MASTER_API_KEY:
         # Create a virtual admin API key (not in database)
         master_key = APIKey(
-            id=0,  # Special ID for master key
+            id=-1,  # Negative ID prevents collision with auto-increment IDs
             name="Master API Key",
             key_hash="",  # No hash needed
             tier="admin",
@@ -123,7 +123,7 @@ async def check_rate_limit(
 ) -> APIKey:
     """Check rate limit for the current API key.
 
-    Note: Master key (ID=0) bypasses rate limiting.
+    Note: Master key (ID=-1) bypasses rate limiting.
 
     Args:
         api_key: Current API key
@@ -136,7 +136,7 @@ async def check_rate_limit(
         HTTPException: If rate limit exceeded
     """
     # Master key bypasses rate limiting
-    if api_key.id == 0:
+    if api_key.id == -1:
         return api_key
 
     if not rate_limiter.is_allowed(str(api_key.id), api_key.tier):

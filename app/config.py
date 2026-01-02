@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine.url import make_url
 
 
 class Settings(BaseSettings):
@@ -60,9 +61,13 @@ class Settings(BaseSettings):
         if self.CACHE_ENABLED and self.CACHE_DIR:
             self.CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-        # Ensure database directory exists
-        db_path = Path(self.DATABASE_URL.replace("sqlite:///", ""))
-        db_path.parent.mkdir(parents=True, exist_ok=True)
+        # Ensure database directory exists (only for SQLite)
+        db_url = make_url(self.DATABASE_URL)
+        if db_url.drivername.startswith("sqlite"):
+            db_path = (
+                Path(db_url.database) if db_url.database else Path("./data/myapi.db")
+            )
+            db_path.parent.mkdir(parents=True, exist_ok=True)
 
 
 # Global settings instance
