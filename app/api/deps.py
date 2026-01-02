@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import APIKeyHeader
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.core.cache import TTLCache
 from app.core.exceptions import DisabledAPIKey, InvalidAPIKey
 from app.core.rate_limit import RateLimiter
@@ -44,12 +45,17 @@ async def get_current_api_key(
 ) -> APIKey:
     """Verify API key and return the model.
 
+    Master Key Bypass:
+        If the provided API key matches MASTER_API_KEY from settings,
+        returns a virtual admin-tier APIKey object (not in database).
+        Master key bypasses rate limiting and has full admin access.
+
     Args:
         api_key: API key from header
         db: Database session
 
     Returns:
-        APIKey model if valid
+        APIKey model if valid (or virtual APIKey for master key)
 
     Raises:
         HTTPException: If key is missing, invalid, or disabled
@@ -59,6 +65,20 @@ async def get_current_api_key(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="API key required. Provide X-API-Key header.",
         )
+
+    # Check for master key bypass
+    if settings.MASTER_API_KEY and api_key == settings.MASTER_API_KEY:
+        # Create a virtual admin API key (not in database)
+        master_key = APIKey(
+            id=0,  # Special ID for master key
+            name="Master API Key",
+            key_hash="",  # No hash needed
+            tier="admin",
+            is_active=True,
+            rate_limit=999999,
+            rate_window=60,
+        )
+        return master_key
 
     db_key = APIKeyService.verify_api_key(db, api_key)
 
@@ -103,6 +123,8 @@ async def check_rate_limit(
 ) -> APIKey:
     """Check rate limit for the current API key.
 
+    Note: Master key (ID=0) bypasses rate limiting.
+
     Args:
         api_key: Current API key
         rate_limiter: Rate limiter instance
@@ -113,6 +135,10 @@ async def check_rate_limit(
     Raises:
         HTTPException: If rate limit exceeded
     """
+    # Master key bypasses rate limiting
+    if api_key.id == 0:
+        return api_key
+
     if not rate_limiter.is_allowed(str(api_key.id), api_key.tier):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

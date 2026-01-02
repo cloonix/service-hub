@@ -6,6 +6,7 @@ A production-ready FastAPI backend providing YouTube transcript fetching with AP
 
 - 🚀 FastAPI-based RESTful API
 - 🔐 API key authentication with bcrypt hashing
+- 🔑 Master key bypass for development/admin access
 - ⚡ TTL cache with LRU eviction and disk persistence
 - 🛡️ Rate limiting with sliding window algorithm
 - 📊 Admin endpoints for API key management
@@ -104,6 +105,65 @@ curl -X POST "http://localhost:8000/api/v1/admin/keys" \
 | free    | 100 req/min         | Development, testing        |
 | premium | 1000 req/min        | Production applications     |
 | admin   | 10000 req/min       | Admin operations, MCP server|
+
+## Authentication Methods
+
+### 1. Master API Key (Recommended for Development)
+
+The master API key is a special bypass key configured via the `MASTER_API_KEY` environment variable:
+
+**Features:**
+- Bypasses database lookup for faster authentication
+- Bypasses rate limiting completely
+- Automatically has admin-tier permissions
+- Perfect for development, testing, and administrative tasks
+
+**Setup:**
+```bash
+# In .env file
+MASTER_API_KEY=dev-master-key-12345
+```
+
+**Usage:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/youtube/transcript" \
+  -H "X-API-Key: dev-master-key-12345" \
+  -H "Content-Type: application/json" \
+  -d '{"video_url_or_id": "dQw4w9WgXcQ"}'
+```
+
+**Security Notes:**
+- Keep the master key secret in production environments
+- Use a strong, random value for production
+- Leave empty to disable the master key bypass feature
+- Never commit the master key to version control
+
+### 2. Database API Keys (Recommended for Production)
+
+Create API keys stored in the database with fine-grained control:
+
+```bash
+# Via CLI
+python scripts/manage_keys.py create myapp --tier premium
+
+# Via API (requires admin key)
+curl -X POST "http://localhost:8000/api/v1/admin/keys" \
+  -H "X-API-Key: your-admin-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "client-key",
+    "tier": "free",
+    "rate_limit": 100,
+    "rate_window": 60
+  }'
+```
+
+**Benefits:**
+- Granular rate limiting per key
+- Can be enabled/disabled without server restart
+- Trackable usage statistics
+- Support for IP whitelisting
+- Audit trail with last_used timestamps
 
 ## Docker Deployment
 
@@ -216,7 +276,7 @@ DEFAULT_RATE_LIMIT=100
 DEFAULT_RATE_WINDOW=60
 
 # Security
-MASTER_API_KEY=<generated-admin-key>
+MASTER_API_KEY=<your-master-key-here>
 SECRET_KEY=<random-secret-for-production>
 
 # CORS (restrict in production)
