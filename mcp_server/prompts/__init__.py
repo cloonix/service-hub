@@ -1,5 +1,5 @@
 """MCP prompts registry."""
 
-from mcp.prompts.youtube import register_youtube_prompts
+from mcp_server.prompts.youtube import register_youtube_prompts
 
 __all__ = ["register_youtube_prompts"]

@@ -9,9 +9,9 @@ import os
 
 from mcp.server.fastmcp import FastMCP
 
-from mcp.prompts import register_youtube_prompts
-from mcp.resources import register_info_resources
-from mcp.tools import register_youtube_tools
+from mcp_server.prompts import register_youtube_prompts
+from mcp_server.resources import register_info_resources
+from mcp_server.tools import register_youtube_tools
 
 # Configure logging
 logging.basicConfig(
@@ -56,5 +56,5 @@ if __name__ == "__main__":
     main()
 
 # For uvicorn direct deployment
-# Run with: uvicorn mcp.server:app --host 0.0.0.0 --port 8001
+# Run with: uvicorn mcp_server.server:app --host 0.0.0.0 --port 8001
 app = mcp.streamable_http_app()
