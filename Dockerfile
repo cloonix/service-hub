@@ -1,23 +1,17 @@
-FROM python:3.13-slim
+FROM python:3.13-alpine
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+# Install system dependencies (minimal)
+RUN apk add --no-cache gcc musl-dev curl
 
-# Copy requirements
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY app/ ./app/
 COPY scripts/ ./scripts/
-COPY alembic/ ./alembic/
-COPY alembic.ini .
 
 # Create necessary directories
 RUN mkdir -p /app/data /app/cache
