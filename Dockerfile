@@ -5,7 +5,7 @@ WORKDIR /app
 # Install system dependencies (minimal)
 RUN apk add --no-cache gcc musl-dev curl
 
-# Copy requirements and install Python dependencies
+# Copy requirements and install Python dependencies (minimal - API only)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

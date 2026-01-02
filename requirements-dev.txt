@@ -8,5 +8,3 @@ black==24.10.0
 ruff==0.8.4
 mypy==1.13.0
 
-# Development
-ipython==8.31.0

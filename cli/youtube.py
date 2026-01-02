@@ -17,7 +17,30 @@ from lib.youtube.models import FormatType
 
 app = typer.Typer(
     name="youtube-transcript",
-    help="YouTube transcript CLI tool - fetch video transcripts in multiple formats",
+    help="""YouTube transcript CLI tool - fetch video transcripts in multiple formats.
+
+Examples:
+
+  # Get English transcript (default)
+  youtube-transcript get-transcript dQw4w9WgXcQ
+
+  # Get Spanish transcript
+  youtube-transcript get-transcript dQw4w9WgXcQ -l es
+
+  # Try multiple languages (fallback)
+  youtube-transcript get-transcript dQw4w9WgXcQ -l en -l es
+
+  # List available languages first
+  youtube-transcript list-languages dQw4w9WgXcQ
+
+  # Save as JSON with timestamps
+  youtube-transcript get-transcript dQw4w9WgXcQ -f json -o output.json
+
+Commands:
+  get-transcript   Fetch video transcript
+  list-languages   Show available languages for a video
+  version          Show version information
+""",
     add_completion=False,
 )
 console = Console()
@@ -27,7 +50,10 @@ console = Console()
 def get_transcript(
     video: str = typer.Argument(..., help="YouTube video URL or ID"),
     lang: list[str] = typer.Option(
-        ["en"], "--lang", "-l", help="Language codes (can be used multiple times)"
+        ["en"],
+        "--lang",
+        "-l",
+        help="Language code (e.g., 'en', 'es', 'fr'). Can be specified multiple times for fallback languages. Use 'list-languages' command to see available languages.",
     ),
     format: str = typer.Option(
         "plain",
@@ -43,14 +69,20 @@ def get_transcript(
 
     Examples:
 
-        # Get plain text transcript
+        # Get English transcript (default)
         youtube-transcript get-transcript dQw4w9WgXcQ
 
-        # Get transcript with specific languages
-        youtube-transcript get-transcript VIDEO_ID -l en -l es
+        # Get Spanish transcript
+        youtube-transcript get-transcript dQw4w9WgXcQ -l es
+
+        # Try English first, fallback to Spanish if not available
+        youtube-transcript get-transcript dQw4w9WgXcQ -l en -l es
 
         # Get JSON format with timestamps and save to file
-        youtube-transcript get-transcript VIDEO_ID -f json -o transcript.json
+        youtube-transcript get-transcript dQw4w9WgXcQ -f json -o transcript.json
+
+        # List available languages for a video first
+        youtube-transcript list-languages dQw4w9WgXcQ
     """
     # Validate format
     valid_formats = ["plain", "json"]

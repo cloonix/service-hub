@@ -100,10 +100,17 @@ The CLI provides a command-line interface for fetching YouTube transcripts witho
 ### Installation
 
 ```bash
-# Install dependencies
-python -m venv venv
-source venv/bin/activate
+# Core API only (minimal dependencies)
 pip install -r requirements.txt
+
+# For CLI support
+pip install -r requirements.txt -r requirements-cli.txt
+
+# For MCP server
+pip install -r requirements.txt -r requirements-mcp.txt
+
+# For development
+pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 ### Commands
@@ -271,17 +278,57 @@ docker pull ghcr.io/cloonix/service-hub-mcp:latest
 ## Development
 
 ```bash
-# Install dependencies
+# Install dependencies (including dev tools)
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 
 # Run locally
 uvicorn app.main:app --reload
 
-# Run MCP server
-uvicorn mcp.server:app --port 8001
+# Run MCP server (requires MCP dependencies)
+pip install -r requirements-mcp.txt
+uvicorn mcp_server.server:app --port 8001
+
+# Run tests
+pytest
+
+# Code quality
+black .
+ruff check .
+mypy .
 ```
+
+### Dependency Structure
+
+The project uses a modular dependency structure to keep installations minimal:
+
+```
+requirements.txt           # Core API dependencies (8 packages)
+├── fastapi, uvicorn      # Web framework
+├── pydantic              # Data validation
+├── sqlalchemy            # Database ORM
+├── bcrypt                # Security
+└── youtube-transcript-api # Core feature
+
+requirements-cli.txt       # CLI additions (2 packages)
+├── typer                 # CLI framework
+└── rich                  # Pretty terminal output
+
+requirements-mcp.txt       # MCP server additions (2 packages)
+├── mcp                   # MCP protocol
+└── httpx                 # HTTP client
+
+requirements-dev.txt       # Development tools (6 packages)
+├── pytest, pytest-asyncio, pytest-cov  # Testing
+└── black, ruff, mypy                   # Code quality
+```
+
+**Benefits:**
+- Core API installs only 8 dependencies
+- Optional features add minimal overhead
+- Docker images stay lean
+- Faster CI/CD builds
 
 ## Project Structure
 

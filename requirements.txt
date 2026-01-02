@@ -1,3 +1,8 @@
+# Core API Dependencies - Minimal Set
+# Install with: pip install -r requirements.txt
+# For CLI support: pip install -r requirements-cli.txt
+# For MCP server: pip install -r requirements-mcp.txt
+
 # Core FastAPI
 fastapi==0.115.5
 uvicorn==0.32.1
@@ -14,14 +19,6 @@ bcrypt==4.2.1
 
 # YouTube
 youtube-transcript-api==1.2.3
-
-# CLI
-typer>=0.12.0
-rich>=13.7.0
-
-# MCP Server
-mcp>=1.0.0
-httpx>=0.27.0
 
 # Utilities
 python-dotenv==1.0.1
