@@ -155,7 +155,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 
 # Run MCP server
-uvicorn youtube_mcp.server:app --port 8001
+uvicorn mcp_server.server:app --port 8001
 ```
 
 ## Project Structure
@@ -168,9 +168,12 @@ service-hub/
 │   ├── models/          # Database models
 │   ├── schemas/         # Pydantic schemas
 │   └── services/        # Business logic
-├── youtube_mcp/         # MCP server
-│   ├── server.py        # MCP tools & resources
-│   └── client.py        # HTTP client for API
+├── mcp_server/          # MCP server
+│   ├── server.py        # Main MCP server
+│   ├── tools/           # MCP tool implementations
+│   ├── clients/         # API clients
+│   ├── prompts/         # MCP prompts
+│   └── resources/       # MCP resources
 ├── scripts/             # Management scripts
 ├── tests/               # Test suite
 ├── docker-compose.yml   # Docker services
