@@ -53,9 +53,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Initialize rate limiter with tier-based limits
     tier_limits = {
-        "free": (100, 60),  # 100 requests per minute
-        "premium": (1000, 60),  # 1000 requests per minute
-        "admin": (10000, 60),  # 10000 requests per minute
+        "free": (settings.TIER_FREE_RATE_LIMIT, settings.TIER_RATE_WINDOW),
+        "premium": (settings.TIER_PREMIUM_RATE_LIMIT, settings.TIER_RATE_WINDOW),
+        "admin": (settings.TIER_ADMIN_RATE_LIMIT, settings.TIER_RATE_WINDOW),
     }
     app.state.rate_limiter = RateLimiter(
         max_requests=settings.DEFAULT_RATE_LIMIT,

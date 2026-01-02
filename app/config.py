@@ -41,6 +41,12 @@ class Settings(BaseSettings):
     DEFAULT_RATE_LIMIT: int = 100  # requests
     DEFAULT_RATE_WINDOW: int = 60  # seconds
 
+    # Tier-specific rate limits
+    TIER_FREE_RATE_LIMIT: int = 100  # requests per minute
+    TIER_PREMIUM_RATE_LIMIT: int = 1000  # requests per minute
+    TIER_ADMIN_RATE_LIMIT: int = 10000  # requests per minute
+    TIER_RATE_WINDOW: int = 60  # seconds
+
     # Security
     MASTER_API_KEY: str = ""  # Required - must be set in .env for production
     SECRET_KEY: str = "change-me-in-production"  # For future JWT support
@@ -51,10 +57,9 @@ class Settings(BaseSettings):
     YOUTUBE_PROXY_HTTPS: str | None = None
 
     # MCP Server Settings
+    # Note: MCP server now uses the YouTube library directly (no API key needed)
     MCP_SERVER_HOST: str = "0.0.0.0"
     MCP_SERVER_PORT: int = 8001
-    MCP_API_KEY: str | None = None  # Generated during setup
-    FASTAPI_URL: str = "http://localhost:8000"
 
     def ensure_directories(self) -> None:
         """Ensure required directories exist."""
