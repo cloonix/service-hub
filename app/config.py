@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     CACHE_TTL: int = 3600  # 1 hour in seconds
     CACHE_MAX_SIZE: int = 100
     CACHE_DIR: Path = Path("./cache")
+    CACHE_SAVE_INTERVAL: int = 60  # Disk save interval in seconds
 
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True

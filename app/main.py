@@ -50,6 +50,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         ttl_seconds=settings.CACHE_TTL,
         max_size=settings.CACHE_MAX_SIZE,
         cache_dir=settings.CACHE_DIR if settings.CACHE_ENABLED else None,
+        save_interval=settings.CACHE_SAVE_INTERVAL,
     )
 
     # Initialize rate limiter with tier-based limits

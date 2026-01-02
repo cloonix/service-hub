@@ -27,6 +27,7 @@ class TTLCache:
         ttl_seconds: int = 3600,
         max_size: int = 100,
         cache_dir: Path | None = None,
+        save_interval: int = 60,
     ):
         """Initialize the TTL cache.
 
@@ -34,12 +35,15 @@ class TTLCache:
             ttl_seconds: Time-to-live for cache entries in seconds
             max_size: Maximum number of entries in cache
             cache_dir: Optional directory for disk persistence
+            save_interval: Interval in seconds between disk saves (default: 60)
         """
         self.ttl = timedelta(seconds=ttl_seconds)
         self.max_size = max_size
         self.cache_dir = cache_dir
+        self.save_interval = save_interval
         self._cache: OrderedDict[str, Any] = OrderedDict()
         self._timestamps: dict[str, datetime] = {}
+        self._last_save = datetime.now()
         self.hits = 0
         self.misses = 0
 
@@ -145,9 +149,11 @@ class TTLCache:
         self._timestamps[key] = datetime.now()
         self._cache.move_to_end(key)
 
-        # Periodically save to disk (every 10 writes)
-        if len(self._cache) % 10 == 0:
+        # Save to disk if save_interval has elapsed
+        now = datetime.now()
+        if (now - self._last_save).total_seconds() >= self.save_interval:
             self._save_to_disk()
+            self._last_save = now
 
     def clear(self) -> None:
         """Clear all cache entries and reset statistics."""
