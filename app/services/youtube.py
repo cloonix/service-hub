@@ -107,15 +107,15 @@ class YouTubeService:
             Formatted transcript as string or dict
         """
         if format_type == "plain":
-            return "\n".join(entry["text"] for entry in transcript_data)
+            return "\n".join(entry.text for entry in transcript_data)
 
         elif format_type == "structured":
             return {
                 "entries": [
                     {
-                        "text": entry["text"],
-                        "start": entry["start"],
-                        "duration": entry["duration"],
+                        "text": entry.text,
+                        "start": entry.start,
+                        "duration": entry.duration,
                     }
                     for entry in transcript_data
                 ]
@@ -125,25 +125,21 @@ class YouTubeService:
             # SRT subtitle format
             srt_output = []
             for idx, entry in enumerate(transcript_data, 1):
-                start = YouTubeService._format_timestamp_srt(entry["start"])
-                end = YouTubeService._format_timestamp_srt(
-                    entry["start"] + entry["duration"]
-                )
-                srt_output.append(f"{idx}\n{start} --> {end}\n{entry['text']}\n")
+                start = YouTubeService._format_timestamp_srt(entry.start)
+                end = YouTubeService._format_timestamp_srt(entry.start + entry.duration)
+                srt_output.append(f"{idx}\n{start} --> {end}\n{entry.text}\n")
             return "\n".join(srt_output)
 
         elif format_type == "vtt":
             # WebVTT format
             vtt_output = ["WEBVTT\n"]
             for entry in transcript_data:
-                start = YouTubeService._format_timestamp_vtt(entry["start"])
-                end = YouTubeService._format_timestamp_vtt(
-                    entry["start"] + entry["duration"]
-                )
-                vtt_output.append(f"{start} --> {end}\n{entry['text']}\n")
+                start = YouTubeService._format_timestamp_vtt(entry.start)
+                end = YouTubeService._format_timestamp_vtt(entry.start + entry.duration)
+                vtt_output.append(f"{start} --> {end}\n{entry.text}\n")
             return "\n".join(vtt_output)
 
-        return "\n".join(entry["text"] for entry in transcript_data)
+        return "\n".join(entry.text for entry in transcript_data)
 
     def get_transcript(
         self,
