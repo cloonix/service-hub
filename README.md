@@ -107,17 +107,29 @@ curl -X POST "http://localhost:8000/api/v1/admin/keys" \
 
 ## Docker Deployment
 
+### Prerequisites
+
+1. Copy and configure your `.env` file:
+```bash
+cp .env.example .env
+# Edit .env with your production settings
+```
+
 ### Build and Run
 
 ```bash
 docker-compose up -d
 ```
 
+The Docker container will automatically use the `.env` file for all configuration. No environment variables are hardcoded in `docker-compose.yml`.
+
 ### Create Admin Key (in container)
 
 ```bash
 docker-compose exec api python scripts/manage_keys.py create admin --tier admin
 ```
+
+Save the generated key to your `.env` file as `MASTER_API_KEY`.
 
 ## Project Structure
 
@@ -170,34 +182,52 @@ mypy app/
 
 ## Configuration
 
+All configuration is managed through the `.env` file. Copy `.env.example` to `.env` and configure:
+
+```bash
+cp .env.example .env
+# Edit .env with your settings
+```
+
+**Important**: All environment variables should be in `.env` only. The `docker-compose.yml` file reads from `.env` automatically - do not add environment variables directly in the compose file.
+
 Key environment variables:
 
 ```env
 # API Settings
-ENVIRONMENT=development
+ENVIRONMENT=production  # or development
 DEBUG=False
 LOG_LEVEL=INFO
+HOST=0.0.0.0
+PORT=8000
 
 # Database
 DATABASE_URL=sqlite:///./data/myapi.db
 
 # Cache
-CACHE_ENABLED=True
+CACHE_ENABLED=true
 CACHE_TTL=3600
 CACHE_MAX_SIZE=100
+CACHE_DIR=/app/cache
 
 # Rate Limiting
-RATE_LIMIT_ENABLED=True
+RATE_LIMIT_ENABLED=true
 DEFAULT_RATE_LIMIT=100
 DEFAULT_RATE_WINDOW=60
 
 # Security
-ADMIN_API_KEY=<generated-admin-key>
+MASTER_API_KEY=<generated-admin-key>
+SECRET_KEY=<random-secret-for-production>
+
+# CORS (restrict in production)
+ALLOWED_ORIGINS=*
 
 # YouTube (Optional)
 # YOUTUBE_COOKIES=/path/to/cookies.txt
 # YOUTUBE_PROXY_HTTP=http://proxy:port
 ```
+
+See `.env.example` for all available configuration options.
 
 ## API Documentation
 
