@@ -24,10 +24,12 @@ Base = declarative_base()
 
 
 def get_db() -> Generator[Session, None, None]:
-    """
-    Dependency function to get database session.
+    """Dependency function to get database session.
 
-    Usage in FastAPI endpoints:
+    Yields:
+        Database session that is automatically closed after use
+
+    Example:
         @app.get("/items")
         def read_items(db: Session = Depends(get_db)):
             ...
