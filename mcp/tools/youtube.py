@@ -8,7 +8,7 @@ from lib.youtube import TranscriptService
 logger = logging.getLogger(__name__)
 
 
-def register_youtube_tools(mcp_server, cache=None):
+def register_youtube_tools(mcp_server: Any, cache: Any = None) -> None:
     """Register YouTube-related MCP tools.
 
     Args:

@@ -1,5 +1,7 @@
 """YouTube transcript API routes."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends
 
 from app.api.deps import check_rate_limit, get_cache
@@ -16,7 +18,7 @@ async def get_transcript(
     request: TranscriptRequest,
     api_key: APIKey = Depends(check_rate_limit),
     cache: TTLCache = Depends(get_cache),
-) -> dict:
+) -> dict[str, Any]:
     """Fetch YouTube video transcript.
 
     Args:
@@ -42,7 +44,7 @@ async def get_transcript(
 async def list_languages(
     video_id: str,
     api_key: APIKey = Depends(check_rate_limit),
-) -> dict:
+) -> dict[str, Any]:
     """List available transcript languages for a video.
 
     Args:

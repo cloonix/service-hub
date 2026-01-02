@@ -1,7 +1,9 @@
 """Service information resources for MCP server."""
 
+from typing import Any
 
-def register_info_resources(mcp_server):
+
+def register_info_resources(mcp_server: Any) -> None:
     """Register service information resources.
 
     Args:

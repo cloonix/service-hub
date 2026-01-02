@@ -1,5 +1,7 @@
 """Admin API routes for key management."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -53,7 +55,7 @@ async def create_api_key(
     request: CreateAPIKeyRequest,
     admin_key: APIKey = Depends(get_admin_api_key),
     db: Session = Depends(get_db),
-) -> dict:
+) -> dict[str, Any]:
     """Create a new API key (admin only).
 
     Args:
@@ -88,7 +90,7 @@ async def list_api_keys(
     include_inactive: bool = False,
     admin_key: APIKey = Depends(get_admin_api_key),
     db: Session = Depends(get_db),
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """List all API keys (admin only).
 
     Args:
@@ -110,7 +112,7 @@ async def list_api_keys(
             "is_active": key.is_active,
             "rate_limit": key.rate_limit,
             "rate_window": key.rate_window,
-            "created_at": key.created_at.isoformat(),
+            "created_at": key.created_at.isoformat() if key.created_at else "",
             "last_used": key.last_used.isoformat() if key.last_used else None,
         }
         for key in keys
@@ -122,7 +124,7 @@ async def deactivate_api_key(
     key_id: int,
     admin_key: APIKey = Depends(get_admin_api_key),
     db: Session = Depends(get_db),
-) -> dict:
+) -> dict[str, Any]:
     """Deactivate an API key (admin only).
 
     Args:
@@ -150,7 +152,7 @@ async def deactivate_api_key(
 @router.post("/cache/clear", response_model=SuccessResponse)
 async def clear_cache(
     admin_key: APIKey = Depends(get_admin_api_key), cache: TTLCache = Depends(get_cache)
-) -> dict:
+) -> dict[str, Any]:
     """Clear the application cache (admin only).
 
     Args:

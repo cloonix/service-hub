@@ -2,7 +2,7 @@
 
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -149,7 +149,7 @@ app.include_router(admin.router, prefix="/api/v1")
 
 
 @app.get("/")
-async def root() -> dict:
+async def root() -> dict[str, Any]:
     """Root endpoint.
 
     Returns:

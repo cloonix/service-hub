@@ -84,7 +84,7 @@ def get_transcript(
             "VIDEO_UNAVAILABLE": 4,
             "TRANSCRIPTS_DISABLED": 5,
         }
-        exit_code = error_codes.get(result.error, 1)
+        exit_code = error_codes.get(result.error or "UNKNOWN_ERROR", 1)
         raise typer.Exit(exit_code)
 
     # Prepare output
@@ -92,7 +92,8 @@ def get_transcript(
         # Convert to JSON string
         output_text = json.dumps(result.transcript, indent=2)
     else:
-        output_text = result.transcript
+        # For plain format, transcript is a string
+        output_text = str(result.transcript or "")
 
     # Write to file or stdout
     if output:
@@ -146,14 +147,14 @@ def list_languages(
             "VIDEO_UNAVAILABLE": 4,
             "TRANSCRIPTS_DISABLED": 5,
         }
-        exit_code = error_codes.get(result.error, 1)
+        exit_code = error_codes.get(result.error or "UNKNOWN_ERROR", 1)
         raise typer.Exit(exit_code)
 
     # Output as JSON
     if json_output:
         output = {
             "video_id": result.video_id,
-            "languages": [lang.model_dump() for lang in result.languages],
+            "languages": [lang.model_dump() for lang in (result.languages or [])],
         }
         print(json.dumps(output, indent=2))
         raise typer.Exit(0)

@@ -102,6 +102,10 @@ class APIKeyService:
         if not db_key:
             return None
 
+        # Check key_hash is not None (should never be None for valid keys)
+        if not db_key.key_hash:
+            return None
+
         # Verify hash
         if not verify_api_key(plain_key, db_key.key_hash):
             return None
@@ -111,7 +115,7 @@ class APIKeyService:
             return None
 
         # Update last_used timestamp
-        db_key.last_used = datetime.now(timezone.utc)  # type: ignore[assignment]
+        db_key.last_used = datetime.now(timezone.utc)
         db.commit()
 
         return db_key
@@ -174,7 +178,7 @@ class APIKeyService:
             "is_active": db_key.is_active,
             "rate_limit": db_key.rate_limit,
             "rate_window": db_key.rate_window,
-            "created_at": db_key.created_at.isoformat(),
+            "created_at": db_key.created_at.isoformat() if db_key.created_at else "",
             "last_used": db_key.last_used.isoformat() if db_key.last_used else None,
             "created_by": db_key.created_by,
         }

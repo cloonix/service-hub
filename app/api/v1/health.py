@@ -1,5 +1,7 @@
 """Health and metrics API routes."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
@@ -38,7 +40,7 @@ class MetricsResponse(BaseModel):
 
 
 @router.get("/health", response_model=HealthResponse)
-async def health_check() -> dict:
+async def health_check() -> dict[str, Any]:
     """Health check endpoint.
 
     Returns:
@@ -52,7 +54,7 @@ async def health_check() -> dict:
 
 
 @router.get("/metrics", response_model=MetricsResponse)
-async def metrics(cache: TTLCache = Depends(get_cache)) -> dict:
+async def metrics(cache: TTLCache = Depends(get_cache)) -> dict[str, Any]:
     """Get application metrics.
 
     Args:

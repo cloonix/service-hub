@@ -25,7 +25,7 @@ def get_cache(request: Request) -> TTLCache:
     Returns:
         TTLCache instance
     """
-    return request.app.state.cache
+    return request.app.state.cache  # type: ignore[no-any-return]
 
 
 def get_rate_limiter(request: Request) -> RateLimiter:
@@ -37,7 +37,7 @@ def get_rate_limiter(request: Request) -> RateLimiter:
     Returns:
         RateLimiter instance
     """
-    return request.app.state.rate_limiter
+    return request.app.state.rate_limiter  # type: ignore[no-any-return]
 
 
 async def get_current_api_key(
@@ -139,7 +139,7 @@ async def check_rate_limit(
     if api_key.id == -1:
         return api_key
 
-    if not rate_limiter.is_allowed(str(api_key.id), api_key.tier):
+    if not rate_limiter.is_allowed(str(api_key.id), api_key.tier):  # type: ignore[arg-type]
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Rate limit exceeded. Please try again later.",

@@ -1,7 +1,9 @@
 """YouTube-related prompts for MCP server."""
 
+from typing import Any
 
-def register_youtube_prompts(mcp_server):
+
+def register_youtube_prompts(mcp_server: Any) -> None:
     """Register YouTube-related MCP prompts.
 
     Args:
