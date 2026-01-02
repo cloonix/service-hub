@@ -305,6 +305,120 @@ curl http://localhost:8000/health
 curl http://localhost:8000/metrics
 ```
 
+## MCP Server Integration
+
+The project includes an MCP (Model Context Protocol) server that exposes YouTube transcript functionality via HTTP, allowing LLMs and other clients to access transcripts programmatically.
+
+### What is MCP?
+
+MCP is a protocol that allows AI assistants to connect to external tools and services. The YouTube MCP server exposes:
+
+**Tools:**
+- `get_youtube_transcript`: Fetch transcripts in various formats (plain, structured, srt, vtt)
+- `list_youtube_languages`: List available transcript languages for a video
+
+**Resources:**
+- `info://youtube-service`: Service information and usage guide
+
+**Prompts:**
+- `summarize_video`: Generate video summary prompts with customizable focus
+
+### Deployment
+
+The MCP server is included in the Docker Compose setup and runs on port **8001** by default.
+
+```bash
+# Start both API and MCP servers
+docker compose up -d
+
+# MCP server available at:
+http://localhost:8001/mcp
+```
+
+### Configuration
+
+Configure via environment variables in `.env`:
+
+```env
+# MCP Server Settings
+MCP_TRANSPORT=streamable-http        # Use HTTP transport
+FASTAPI_URL=http://api:8000          # FastAPI backend URL
+MASTER_API_KEY=your-master-key-here  # API authentication
+```
+
+### Testing the MCP Server
+
+The MCP server uses Server-Sent Events (SSE) for communication. Test with an MCP-compatible client or use the FastAPI backend directly.
+
+**Direct API access (simpler):**
+```bash
+curl -X POST "http://localhost:8000/api/v1/youtube/transcript" \
+  -H "X-API-Key: your-master-key" \
+  -H "Content-Type: application/json" \
+  -d '{"video_url_or_id": "dQw4w9WgXcQ"}'
+```
+
+**MCP endpoint:**
+```bash
+# MCP server running at http://localhost:8001/mcp
+# Requires MCP-compatible client (Claude Desktop, etc.)
+```
+
+### MCP Client Integration
+
+#### Option 1: Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "youtube-transcript": {
+      "url": "http://localhost:8001/mcp"
+    }
+  }
+}
+```
+
+#### Option 2: Custom MCP Client
+
+Use any MCP-compatible HTTP client to connect to `http://localhost:8001/mcp`.
+
+### Standalone Deployment
+
+Run the MCP server separately:
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run with uvicorn
+uvicorn youtube_mcp.server:app --host 0.0.0.0 --port 8001
+```
+
+### Architecture
+
+```
+┌─────────────────┐
+│  MCP Client     │
+│ (Claude, etc.)  │
+└────────┬────────┘
+         │ HTTP/SSE
+         │ port 8001
+┌────────▼────────┐
+│  MCP Server     │
+│ youtube_mcp     │
+└────────┬────────┘
+         │ HTTP
+         │ port 8000
+┌────────▼────────┐
+│  FastAPI        │
+│  Backend        │
+└─────────────────┘
+```
+
+The MCP server acts as a proxy, translating MCP protocol requests into FastAPI calls using the master API key for authentication.
+
 ## Security Best Practices
 
 1. ✅ Never commit `.env` files
