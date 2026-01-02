@@ -1,9 +1,6 @@
 """Security utilities for API key management."""
 
-from passlib.context import CryptContext
-
-# Password hashing context using bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 
 def hash_api_key(api_key: str) -> str:
@@ -13,9 +10,14 @@ def hash_api_key(api_key: str) -> str:
         api_key: The plain API key to hash
 
     Returns:
-        The bcrypt hash of the API key
+        The bcrypt hash of the API key as a string
     """
-    return pwd_context.hash(api_key)
+    # bcrypt requires bytes input
+    key_bytes = api_key.encode("utf-8")
+    # Generate salt and hash
+    hashed = bcrypt.hashpw(key_bytes, bcrypt.gensalt())
+    # Return as string for database storage
+    return hashed.decode("utf-8")
 
 
 def verify_api_key(plain_key: str, hashed_key: str) -> bool:
@@ -28,4 +30,10 @@ def verify_api_key(plain_key: str, hashed_key: str) -> bool:
     Returns:
         True if the key matches, False otherwise
     """
-    return pwd_context.verify(plain_key, hashed_key)
+    try:
+        # bcrypt requires bytes input
+        key_bytes = plain_key.encode("utf-8")
+        hash_bytes = hashed_key.encode("utf-8")
+        return bcrypt.checkpw(key_bytes, hash_bytes)
+    except Exception:
+        return False

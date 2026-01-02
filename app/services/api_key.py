@@ -23,7 +23,8 @@ class APIKeyService:
         Returns:
             Tuple of (full_key, key_prefix, key_hash)
         """
-        random_part = secrets.token_urlsafe(32)
+        # Generate 24 bytes (32 chars base64) to keep total under 72 chars for bcrypt
+        random_part = secrets.token_urlsafe(24)
         full_key = f"{prefix}_{random_part}"
         key_prefix = full_key[:8]
         key_hash = hash_api_key(full_key)
