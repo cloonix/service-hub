@@ -1,6 +1,7 @@
 services:
   api:
     image: ghcr.io/cloonix/service-hub-api:latest
+    container_name: service-hub-api
     pull_policy: always
     ports:
       - "8000:8000"
@@ -20,6 +21,7 @@ services:
 
   mcp:
     image: ghcr.io/cloonix/service-hub-mcp:latest
+    container_name: service-hub-mcp
     pull_policy: always
     ports:
       - "8001:8001"
