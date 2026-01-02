@@ -1,0 +1,261 @@
+# YouTube Transcript API
+
+A production-ready FastAPI backend providing YouTube transcript fetching with API key authentication, caching, and rate limiting.
+
+## Features
+
+- 🚀 FastAPI-based RESTful API
+- 🔐 API key authentication with bcrypt hashing
+- ⚡ TTL cache with LRU eviction and disk persistence
+- 🛡️ Rate limiting with sliding window algorithm
+- 📊 Admin endpoints for API key management
+- 🐳 Docker support for easy deployment
+- ✅ Comprehensive testing suite
+- 📝 Full type safety with Pydantic v2
+
+## Architecture
+
+```
+FastAPI Backend (Port 8000)
+├── API Key Authentication
+├── Rate Limiting (per-tier)
+├── TTL Cache with Disk Persistence
+└── YouTube Transcript Service
+
+Future: MCP Server (Port 8001)
+└── HTTP Client → FastAPI Backend
+```
+
+## Quick Start
+
+### 1. Clone and Install
+
+```bash
+git clone <repository-url>
+cd myapi
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Configure Environment
+
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+### 3. Create Admin API Key
+
+```bash
+python scripts/manage_keys.py create admin --tier admin --description "Master admin key"
+```
+
+Save the generated API key securely - it won't be shown again!
+
+### 4. Run the Server
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Visit http://localhost:8000/docs for interactive API documentation.
+
+## API Usage
+
+### Get Transcript
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/youtube/transcript" \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "video_url_or_id": "dQw4w9WgXcQ",
+    "languages": ["en"],
+    "format_type": "plain"
+  }'
+```
+
+### List Available Languages
+
+```bash
+curl "http://localhost:8000/api/v1/youtube/languages/dQw4w9WgXcQ" \
+  -H "X-API-Key: your-api-key-here"
+```
+
+### Admin: Create API Key
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/admin/keys" \
+  -H "X-API-Key: your-admin-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "client-key",
+    "tier": "free",
+    "rate_limit": 100,
+    "rate_window": 60
+  }'
+```
+
+## API Key Tiers
+
+| Tier    | Rate Limit          | Use Case                    |
+|---------|---------------------|-----------------------------|
+| free    | 100 req/min         | Development, testing        |
+| premium | 1000 req/min        | Production applications     |
+| admin   | 10000 req/min       | Admin operations, MCP server|
+
+## Docker Deployment
+
+### Build and Run
+
+```bash
+docker-compose up -d
+```
+
+### Create Admin Key (in container)
+
+```bash
+docker-compose exec api python scripts/manage_keys.py create admin --tier admin
+```
+
+## Project Structure
+
+```
+myapi/
+├── app/
+│   ├── api/           # API routes
+│   │   ├── deps.py    # Dependency injection
+│   │   └── v1/        # API v1 endpoints
+│   ├── core/          # Core utilities (cache, rate limit, security)
+│   ├── models/        # SQLAlchemy models
+│   ├── schemas/       # Pydantic schemas
+│   ├── services/      # Business logic
+│   ├── config.py      # Configuration
+│   ├── database.py    # Database setup
+│   └── main.py        # FastAPI app
+├── tests/             # Test suite
+├── scripts/           # CLI tools
+├── Dockerfile         # Docker configuration
+└── docker-compose.yml # Docker Compose
+```
+
+## Development
+
+### Install Dev Dependencies
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+### Run Tests
+
+```bash
+pytest
+pytest --cov=app --cov-report=html
+```
+
+### Code Quality
+
+```bash
+# Format code
+black app/ tests/
+
+# Lint
+ruff check app/ tests/
+
+# Type checking
+mypy app/
+```
+
+## Configuration
+
+Key environment variables:
+
+```env
+# API Settings
+ENVIRONMENT=development
+DEBUG=False
+LOG_LEVEL=INFO
+
+# Database
+DATABASE_URL=sqlite:///./data/myapi.db
+
+# Cache
+CACHE_ENABLED=True
+CACHE_TTL=3600
+CACHE_MAX_SIZE=100
+
+# Rate Limiting
+RATE_LIMIT_ENABLED=True
+DEFAULT_RATE_LIMIT=100
+DEFAULT_RATE_WINDOW=60
+
+# Security
+ADMIN_API_KEY=<generated-admin-key>
+
+# YouTube (Optional)
+# YOUTUBE_COOKIES=/path/to/cookies.txt
+# YOUTUBE_PROXY_HTTP=http://proxy:port
+```
+
+## API Documentation
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+- OpenAPI JSON: http://localhost:8000/openapi.json
+
+## Health & Metrics
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Metrics (cache stats)
+curl http://localhost:8000/metrics
+```
+
+## Security Best Practices
+
+1. ✅ Never commit `.env` files
+2. ✅ Use strong API keys (auto-generated)
+3. ✅ Rotate API keys regularly (use admin endpoints)
+4. ✅ Run with HTTPS in production
+5. ✅ Restrict CORS origins in production
+6. ✅ Use environment-specific configurations
+
+## Troubleshooting
+
+### Database Issues
+
+```bash
+# Reset database
+rm data/myapi.db
+python -c "from app.database import init_db; init_db()"
+```
+
+### Cache Issues
+
+```bash
+# Clear cache
+rm -rf cache/*
+# Or via API (requires admin key)
+curl -X POST "http://localhost:8000/api/v1/admin/cache/clear" \
+  -H "X-API-Key: your-admin-key"
+```
+
+## License
+
+MIT
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
+
+## Support
+
+For issues and questions, please open an issue on GitHub.
