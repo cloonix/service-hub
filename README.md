@@ -7,9 +7,11 @@ A collection of API services and MCP servers for LLM integration.
 - 🚀 FastAPI backend with YouTube transcript service
 - 🔐 API key authentication with master key bypass
 - 🤖 MCP server for LLM integration (Claude, etc.)
+- 💻 Command-line interface for interactive use
 - ⚡ TTL cache with disk persistence
 - 🛡️ Rate limiting per API key tier
 - 🐳 Docker Compose deployment
+- 📦 Reusable library architecture
 
 ## Quick Start
 
@@ -91,6 +93,67 @@ curl "http://localhost:8000/api/v1/youtube/languages/dQw4w9WgXcQ" \
 
 **Formats:** `plain`, `structured`, `srt`, `vtt`
 
+## CLI Usage
+
+The CLI provides a command-line interface for fetching YouTube transcripts without running the API server.
+
+### Installation
+
+```bash
+# Install dependencies
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Commands
+
+**Get transcript:**
+```bash
+# Plain text (default)
+python scripts/youtube-transcript get-transcript dQw4w9WgXcQ
+
+# JSON format with timestamps
+python scripts/youtube-transcript get-transcript dQw4w9WgXcQ -f json
+
+# Save as SRT subtitle file
+python scripts/youtube-transcript get-transcript dQw4w9WgXcQ -f srt -o subtitles.srt
+
+# Get Spanish transcript
+python scripts/youtube-transcript get-transcript dQw4w9WgXcQ -l es
+
+# Multiple languages (fallback)
+python scripts/youtube-transcript get-transcript dQw4w9WgXcQ -l en -l es
+```
+
+**List available languages:**
+```bash
+# Show as table
+python scripts/youtube-transcript list-languages dQw4w9WgXcQ
+
+# Output as JSON
+python scripts/youtube-transcript list-languages dQw4w9WgXcQ --json
+```
+
+**Show version:**
+```bash
+python scripts/youtube-transcript version
+```
+
+**Supported formats:**
+- `plain` - Plain text (default)
+- `json` - JSON with timestamps and metadata
+- `srt` - SubRip subtitle format
+- `vtt` - WebVTT subtitle format
+
+**Exit codes:**
+- `0` - Success
+- `1` - General error
+- `2` - Invalid video ID
+- `3` - No transcript available
+- `4` - Transcript unavailable
+- `5` - Transcripts disabled
+
 ## MCP Server
 
 The MCP server exposes YouTube transcripts to LLMs via Model Context Protocol.
@@ -115,19 +178,42 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ### Architecture
 
+The project uses a library-first architecture where core functionality is shared across all interfaces:
+
+```
+┌──────────────────────────────────────────────┐
+│             lib/youtube/                     │
+│  (Core Library - Shared Business Logic)     │
+│  - TranscriptService                         │
+│  - Formatters (plain, json, srt, vtt)       │
+│  - Models & Exceptions                       │
+└────────┬──────────────┬──────────────┬───────┘
+         │              │              │
+    ┌────▼─────┐   ┌───▼────┐   ┌────▼─────┐
+    │ FastAPI  │   │  MCP   │   │   CLI    │
+    │ (REST)   │   │ Server │   │  (Typer) │
+    └──────────┘   └────────┘   └──────────┘
+
+Benefits:
+- No code duplication across interfaces
+- Single source of truth for business logic
+- Easy to add new interfaces (GraphQL, gRPC, etc.)
+- Consistent behavior across all entry points
+```
+
+**MCP Server Architecture:**
 ```
 ┌─────────────┐
 │ MCP Client  │ (Claude, etc.)
 └──────┬──────┘
        │ HTTP/SSE :8001
 ┌──────▼──────┐
-│ MCP Server  │
-└──────┬──────┘
-       │ HTTP :8000 (master key)
-┌──────▼──────┐
-│ FastAPI     │
+│ MCP Server  │ ──► lib/youtube (direct use)
 └─────────────┘
 ```
+
+**Previous architecture:** MCP → HTTP → FastAPI → Service  
+**New architecture:** MCP → lib/youtube (no HTTP overhead)
 
 ## API Key Tiers
 
@@ -201,19 +287,28 @@ uvicorn mcp.server:app --port 8001
 
 ```
 service-hub/
+├── lib/                  # Reusable libraries (NEW)
+│   └── youtube/         # YouTube transcript library
+│       ├── service.py   # TranscriptService class
+│       ├── formatters.py # Format converters
+│       ├── models.py    # Pydantic models
+│       ├── cache.py     # Cache protocol
+│       └── exceptions.py # Custom exceptions
 ├── app/                  # FastAPI application
 │   ├── api/             # API endpoints
 │   ├── core/            # Cache, rate limiting, security
 │   ├── models/          # Database models
-│   ├── schemas/         # Pydantic schemas
-│   └── services/        # Business logic
+│   └── schemas/         # Pydantic schemas (re-exports)
 ├── mcp/                 # MCP server
 │   ├── server.py        # Main MCP server
 │   ├── tools/           # MCP tool implementations
-│   ├── clients/         # API clients
 │   ├── prompts/         # MCP prompts
 │   └── resources/       # MCP resources
-├── scripts/             # Management scripts
+├── cli/                 # Command-line interface (NEW)
+│   └── youtube.py       # YouTube CLI commands
+├── scripts/             # Management scripts & entry points
+│   ├── manage_keys.py   # API key management
+│   └── youtube-transcript # CLI entry point
 ├── tests/               # Test suite
 ├── docker-compose.yml   # Docker services
 └── .env.example         # Configuration template

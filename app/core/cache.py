@@ -124,12 +124,13 @@ class TTLCache:
         self.misses += 1
         return None
 
-    def set(self, key: str, value: Any) -> None:
+    def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """Set value in cache with current timestamp.
 
         Args:
             key: Cache key
             value: Value to cache
+            ttl: Optional time-to-live override (currently ignored, uses cache default)
         """
         # Evict oldest entry if at capacity
         if len(self._cache) >= self.max_size and key not in self._cache:
