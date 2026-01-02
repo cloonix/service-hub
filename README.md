@@ -13,6 +13,8 @@ A collection of API services and MCP servers for LLM integration.
 
 ## Quick Start
 
+### Production (Pull from GitHub Container Registry)
+
 ```bash
 # 1. Clone and configure
 git clone git@github.com:cloonix/service-hub.git
@@ -20,8 +22,24 @@ cd service-hub
 cp .env.example .env
 # Edit .env with your configuration
 
-# 2. Start services
+# 2. Start services (pulls latest images)
 docker compose up -d
+
+# 3. Test
+curl http://localhost:8000/health
+```
+
+### Development (Build locally)
+
+```bash
+# 1. Clone and configure
+git clone git@github.com:cloonix/service-hub.git
+cd service-hub
+cp .env.example .env
+# Edit .env with your configuration
+
+# 2. Build and start services
+docker compose -f docker-compose.dev.yml up -d
 
 # 3. Test
 curl http://localhost:8000/health
@@ -142,6 +160,27 @@ FASTAPI_URL=http://api:8000
 ```
 
 See `.env.example` for all options.
+
+## Docker Images
+
+Pre-built images are automatically published to GitHub Container Registry on every push to main:
+
+- **API:** `ghcr.io/cloonix/service-hub-api:latest`
+- **MCP:** `ghcr.io/cloonix/service-hub-mcp:latest`
+
+**Available tags:**
+- `latest` - Latest build from main branch
+- `main` - Same as latest
+- `v*` - Semantic version tags (e.g., `v1.0.0`, `v1.0`, `v1`)
+- `main-<sha>` - Specific commit SHA
+
+**Pull images:**
+```bash
+docker pull ghcr.io/cloonix/service-hub-api:latest
+docker pull ghcr.io/cloonix/service-hub-mcp:latest
+```
+
+**Multi-platform support:** `linux/amd64`, `linux/arm64`
 
 ## Development
 

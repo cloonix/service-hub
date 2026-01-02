@@ -1,7 +1,8 @@
 services:
   api:
-    image: ghcr.io/cloonix/service-hub-api:latest
-    pull_policy: always
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     env_file:
@@ -19,8 +20,9 @@ services:
       - myapi-network
 
   mcp:
-    image: ghcr.io/cloonix/service-hub-mcp:latest
-    pull_policy: always
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
     ports:
       - "8001:8001"
     env_file:
