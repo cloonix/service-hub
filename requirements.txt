@@ -19,7 +19,7 @@ python-jose[cryptography]==3.3.0
 httpx==0.28.1
 
 # YouTube
-youtube-transcript-api==0.6.3
+youtube-transcript-api==1.2.3
 
 # Utilities
 python-dotenv==1.0.1

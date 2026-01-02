@@ -56,18 +56,12 @@ class YouTubeService:
 
     @staticmethod
     def create_api_client() -> YouTubeTranscriptApi:
-        """Create YouTubeTranscriptApi client with optional env configuration.
+        """Create YouTubeTranscriptApi instance with optional env configuration.
 
         Returns:
             Configured YouTubeTranscriptApi instance
         """
         kwargs: dict[str, Any] = {}
-
-        cookies_path = os.environ.get("YOUTUBE_COOKIES")
-        if cookies_path:
-            expanded = Path(cookies_path).expanduser()
-            if expanded.exists() and expanded.is_file():
-                kwargs["cookies"] = str(expanded)
 
         proxy_http = os.environ.get("YOUTUBE_PROXY_HTTP")
         proxy_https = os.environ.get("YOUTUBE_PROXY_HTTPS")
@@ -188,29 +182,8 @@ class YouTubeService:
 
         try:
             api = self.create_api_client()
-            transcript_list = api.list_transcripts(video_id)
-
-            # Try to find transcript in preferred languages
-            transcript_obj = None
-            for lang in languages:
-                try:
-                    transcript_obj = transcript_list.find_transcript([lang])
-                    break
-                except NoTranscriptFound:
-                    continue
-
-            # Fallback to first available if preferred not found
-            if not transcript_obj:
-                # Get first available transcript
-                for transcript in transcript_list:
-                    transcript_obj = transcript
-                    break
-
-            if not transcript_obj:
-                raise NoTranscriptFound(video_id, languages, None)
-
-            # Fetch the actual transcript data
-            transcript_data = transcript_obj.fetch()
+            # Use the new 1.2.3 API: instance.fetch(video_id, languages)
+            transcript_data = api.fetch(video_id, languages=languages)
 
             # Format according to requested type
             formatted = self.format_transcript(transcript_data, format_type)
@@ -219,8 +192,12 @@ class YouTubeService:
                 "success": True,
                 "video_id": video_id,
                 "transcript": formatted,
-                "language": transcript_obj.language_code,
-                "is_generated": transcript_obj.is_generated,
+                "language": transcript_data.language_code
+                if hasattr(transcript_data, "language_code")
+                else "unknown",
+                "is_generated": transcript_data.is_generated
+                if hasattr(transcript_data, "is_generated")
+                else False,
                 "format": format_type,
                 "cached": False,
             }
@@ -290,7 +267,7 @@ class YouTubeService:
 
         try:
             api = self.create_api_client()
-            transcript_list = api.list_transcripts(video_id)
+            transcript_list = api.list(video_id)
 
             languages = []
             for transcript in transcript_list:

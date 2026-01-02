@@ -63,3 +63,4 @@ alembic/versions/*.pyc
 
 # Docker
 docker-compose.override.yml
+yt-transcript/
