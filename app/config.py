@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     # Security
     MASTER_API_KEY: str = ""  # Required - must be set in .env for production
     SECRET_KEY: str = "change-me-in-production"  # For future JWT support
+    MAX_REQUEST_SIZE: int = 1_000_000  # 1MB - Maximum request body size in bytes
 
     # YouTube Settings (optional)
     YOUTUBE_COOKIES: str | None = None

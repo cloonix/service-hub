@@ -16,6 +16,7 @@ from app.core.cache import TTLCache
 from app.core.exceptions import APIError
 from app.core.rate_limit import RateLimiter
 from app.database import init_db
+from app.middleware import RequestSizeLimitMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -90,6 +91,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add request size limit middleware
+app.add_middleware(RequestSizeLimitMiddleware, max_size=settings.MAX_REQUEST_SIZE)
 
 # Add compression middleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
