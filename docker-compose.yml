@@ -15,6 +15,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
     restart: unless-stopped
     networks:
       - myapi-network
@@ -33,7 +34,8 @@ services:
       - MCP_SERVER_HOST=0.0.0.0
       - MCP_SERVER_PORT=8001
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - myapi-network
