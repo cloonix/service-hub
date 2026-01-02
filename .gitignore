@@ -64,3 +64,6 @@ alembic/versions/*.pyc
 # Docker
 docker-compose.override.yml
 yt-transcript/
+
+# Beads issue tracker (local only)
+.beads/
