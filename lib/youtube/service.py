@@ -84,6 +84,62 @@ class TranscriptService:
 
         return YouTubeTranscriptApi(**kwargs)
 
+    @staticmethod
+    def _error_code_from_exception(error: Exception) -> str:
+        """Convert exception class name to error code.
+
+        Args:
+            error: Exception instance
+
+        Returns:
+            Error code in SCREAMING_SNAKE_CASE
+        """
+        # Convert CamelCase to SCREAMING_SNAKE_CASE
+        name = type(error).__name__
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", name).upper()
+
+    @staticmethod
+    def _create_transcript_error(
+        video_id: str, error: Exception, custom_message: str | None = None
+    ) -> TranscriptResponse:
+        """Create error response for transcript operations.
+
+        Args:
+            video_id: Video ID for the response
+            error: The exception that was raised
+            custom_message: Optional custom message (otherwise uses exception message)
+
+        Returns:
+            TranscriptResponse with error details
+        """
+        return TranscriptResponse(
+            success=False,
+            video_id=video_id,
+            error=TranscriptService._error_code_from_exception(error),
+            message=custom_message or str(error),
+        )
+
+    @staticmethod
+    def _create_languages_error(
+        video_id: str, error: Exception, custom_message: str | None = None
+    ) -> LanguagesResponse:
+        """Create error response for language listing operations.
+
+        Args:
+            video_id: Video ID for the response
+            error: The exception that was raised
+            custom_message: Optional custom message (otherwise uses exception message)
+
+        Returns:
+            LanguagesResponse with error details
+        """
+        return LanguagesResponse(
+            success=False,
+            video_id=video_id,
+            error=TranscriptService._error_code_from_exception(error),
+            message=custom_message or str(error),
+        )
+
     def format_transcript(
         self, transcript_data: Any, format_type: FormatType | str
     ) -> str | dict[str, Any]:
@@ -178,36 +234,26 @@ class TranscriptService:
 
             return result
 
-        except TranscriptsDisabled:
-            return TranscriptResponse(
-                success=False,
-                video_id=video_id,
-                error="TRANSCRIPTS_DISABLED",
-                message="Transcripts are disabled for this video",
+        except TranscriptsDisabled as e:
+            return self._create_transcript_error(
+                video_id, e, "Transcripts are disabled for this video"
             )
 
-        except NoTranscriptFound:
-            return TranscriptResponse(
-                success=False,
-                video_id=video_id,
-                error="NO_TRANSCRIPT_FOUND",
-                message=f"No transcript found for languages: {', '.join(languages)}",
+        except NoTranscriptFound as e:
+            return self._create_transcript_error(
+                video_id,
+                e,
+                f"No transcript found for languages: {', '.join(languages)}",
             )
 
-        except VideoUnavailable:
-            return TranscriptResponse(
-                success=False,
-                video_id=video_id,
-                error="VIDEO_UNAVAILABLE",
-                message="Video is unavailable or private",
+        except VideoUnavailable as e:
+            return self._create_transcript_error(
+                video_id, e, "Video is unavailable or private"
             )
 
-        except InvalidVideoId:
-            return TranscriptResponse(
-                success=False,
-                video_id=video_id,
-                error="INVALID_VIDEO_ID",
-                message="Invalid YouTube video ID",
+        except InvalidVideoId as e:
+            return self._create_transcript_error(
+                video_id, e, "Invalid YouTube video ID"
             )
 
         except Exception as e:
@@ -262,12 +308,7 @@ class TranscriptService:
             VideoUnavailable,
             InvalidVideoId,
         ) as e:
-            return LanguagesResponse(
-                success=False,
-                video_id=video_id,
-                error=type(e).__name__.upper(),
-                message=str(e),
-            )
+            return self._create_languages_error(video_id, e)
 
         except Exception as e:
             return LanguagesResponse(
