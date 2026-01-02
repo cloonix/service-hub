@@ -3,18 +3,20 @@
 import logging
 from typing import Any
 
-from mcp_server.clients.youtube import YouTubeAPIClient
+from lib.youtube import TranscriptService
 
 logger = logging.getLogger(__name__)
 
 
-def register_youtube_tools(mcp_server, api_client_factory):
+def register_youtube_tools(mcp_server, cache=None):
     """Register YouTube-related MCP tools.
 
     Args:
         mcp_server: FastMCP server instance
-        api_client_factory: Function that returns YouTubeAPIClient instance
+        cache: Optional cache instance (default: None)
     """
+    # Create service instance (shared across tool invocations)
+    service = TranscriptService(cache=cache)
 
     @mcp_server.tool()
     async def get_youtube_transcript(
@@ -54,15 +56,13 @@ def register_youtube_tools(mcp_server, api_client_factory):
                 "cached": false
             }
         """
-        client = api_client_factory()
-
         try:
-            result = await client.get_transcript(
+            result = service.get_transcript(
                 video_url_or_id=video_url_or_id,
                 languages=languages or ["en"],
                 format_type=format_type,
             )
-            return result
+            return result.model_dump()
         except Exception as e:
             logger.error(f"Error fetching transcript: {e}")
             return {
@@ -91,8 +91,8 @@ def register_youtube_tools(mcp_server, api_client_factory):
                 - success: Whether the request succeeded
                 - video_id: Video ID
                 - languages: List of available language objects with:
-                    - language: Language code (e.g., 'en')
-                    - language_code: Full language code (e.g., 'en-US')
+                    - code: Language code (e.g., 'en')
+                    - name: Language name (e.g., 'English')
                     - is_generated: Whether it's auto-generated
                     - is_translatable: Whether it can be translated
                 - error: Error message if failed
@@ -104,19 +104,17 @@ def register_youtube_tools(mcp_server, api_client_factory):
                 "video_id": "dQw4w9WgXcQ",
                 "languages": [
                     {
-                        "language": "en",
-                        "language_code": "en",
+                        "code": "en",
+                        "name": "English",
                         "is_generated": false,
                         "is_translatable": true
                     }
                 ]
             }
         """
-        client = api_client_factory()
-
         try:
-            result = await client.list_languages(video_id=video_id)
-            return result
+            result = service.list_languages(video_url_or_id=video_id)
+            return result.model_dump()
         except Exception as e:
             logger.error(f"Error listing languages: {e}")
             return {

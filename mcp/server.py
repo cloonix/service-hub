@@ -1,7 +1,7 @@
 """MCP Server for Service Hub.
 
 This MCP server exposes multiple tools and services to LLMs via the Model Context Protocol.
-It acts as a client to the FastAPI backend, using the master API key for authentication.
+Uses the core YouTube transcript library directly (no HTTP calls).
 """
 
 import logging
@@ -9,10 +9,9 @@ import os
 
 from mcp.server.fastmcp import FastMCP
 
-from mcp_server.clients.youtube import YouTubeAPIClient
-from mcp_server.prompts import register_youtube_prompts
-from mcp_server.resources import register_info_resources
-from mcp_server.tools import register_youtube_tools
+from mcp.prompts import register_youtube_prompts
+from mcp.resources import register_info_resources
+from mcp.tools import register_youtube_tools
 
 # Configure logging
 logging.basicConfig(
@@ -24,49 +23,24 @@ logger = logging.getLogger(__name__)
 # Initialize MCP server
 mcp = FastMCP("Service Hub")
 
-# Initialize API client (lazy-loaded on first use)
-_api_client: YouTubeAPIClient | None = None
-
-
-def get_api_client() -> YouTubeAPIClient:
-    """Get or create API client instance.
-
-    Returns:
-        YouTubeAPIClient instance
-    """
-    global _api_client
-    if _api_client is None:
-        api_url = os.getenv("FASTAPI_URL", "http://api:8000")
-        api_key = os.getenv("MCP_API_KEY") or os.getenv("MASTER_API_KEY", "")
-
-        if not api_key:
-            raise ValueError(
-                "MCP_API_KEY or MASTER_API_KEY must be set in environment variables"
-            )
-
-        _api_client = YouTubeAPIClient(base_url=api_url, api_key=api_key)
-        logger.info(f"Initialized YouTube API client with base URL: {api_url}")
-
-    return _api_client
-
-
 # Register all tools, prompts, and resources
 logger.info("Registering MCP tools...")
-register_youtube_tools(mcp, get_api_client)
+# MCP uses library directly - no cache for now (can add later if needed)
+register_youtube_tools(mcp, cache=None)
 logger.info("Registering MCP prompts...")
 register_youtube_prompts(mcp)
 logger.info("Registering MCP resources...")
 register_info_resources(mcp)
 
 
-def main():
+def main() -> None:
     """Entry point for the MCP server."""
     # Get configuration from environment
     transport = os.getenv("MCP_TRANSPORT", "streamable-http")  # Default to HTTP
 
     logger.info("Starting Service Hub MCP Server")
     logger.info(f"Transport: {transport}")
-    logger.info("Available tools: YouTube transcripts")
+    logger.info("Available tools: YouTube transcripts (via core library)")
     logger.info("Future tools: RSS, database, file operations")
 
     # Run with HTTP transport (for remote access) or stdio (for local Claude Desktop)
@@ -82,5 +56,5 @@ if __name__ == "__main__":
     main()
 
 # For uvicorn direct deployment
-# Run with: uvicorn mcp_server.server:app --host 0.0.0.0 --port 8001
+# Run with: uvicorn mcp.server:app --host 0.0.0.0 --port 8001
 app = mcp.streamable_http_app()

@@ -194,7 +194,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 
 # Run MCP server
-uvicorn mcp_server.server:app --port 8001
+uvicorn mcp.server:app --port 8001
 ```
 
 ## Project Structure
@@ -207,7 +207,7 @@ service-hub/
 │   ├── models/          # Database models
 │   ├── schemas/         # Pydantic schemas
 │   └── services/        # Business logic
-├── mcp_server/          # MCP server
+├── mcp/                 # MCP server
 │   ├── server.py        # Main MCP server
 │   ├── tools/           # MCP tool implementations
 │   ├── clients/         # API clients

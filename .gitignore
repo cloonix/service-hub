@@ -16,7 +16,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ - REMOVED: We use lib/ for our library code
 lib64/
 parts/
 sdist/

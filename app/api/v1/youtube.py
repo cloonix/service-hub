@@ -5,12 +5,8 @@ from fastapi import APIRouter, Depends
 from app.api.deps import check_rate_limit, get_cache
 from app.core.cache import TTLCache
 from app.models.api_key import APIKey
-from app.schemas.youtube import (
-    LanguagesResponse,
-    TranscriptRequest,
-    TranscriptResponse,
-)
-from app.services.youtube import YouTubeService
+from lib.youtube import TranscriptService
+from lib.youtube.models import LanguagesResponse, TranscriptRequest, TranscriptResponse
 
 router = APIRouter(prefix="/youtube", tags=["YouTube"])
 
@@ -31,13 +27,15 @@ async def get_transcript(
     Returns:
         Transcript response with formatted transcript data
     """
-    # Fetch transcript
-    service = YouTubeService(cache)
+    # Fetch transcript using core library
+    service = TranscriptService(cache=cache)
     result = service.get_transcript(
-        request.video_url_or_id, request.languages, request.format_type
+        video_url_or_id=request.video_url_or_id,
+        languages=request.languages,
+        format_type=request.format_type,
     )
 
-    return result
+    return result.model_dump()
 
 
 @router.get("/languages/{video_id}", response_model=LanguagesResponse)
@@ -55,7 +53,7 @@ async def list_languages(
         List of available languages with metadata
     """
     # Fetch languages (no caching for language lists)
-    service = YouTubeService(cache=None)
-    result = service.list_transcript_languages(video_id)
+    service = TranscriptService(cache=None)
+    result = service.list_languages(video_url_or_id=video_id)
 
-    return result
+    return result.model_dump()
